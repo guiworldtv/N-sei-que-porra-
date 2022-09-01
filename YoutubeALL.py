@@ -19,7 +19,7 @@ def get_live_info(channel_id):
         if(url is None or url.find("/watch?v=") == -1):
             return None
         titleMeta = soup.find("meta", property="og:title")
-        nomedocanal = soup.find("meta", property="og:video:tag")
+        nomedocanalMeta = soup.find("meta", property="og:video:tag")
         imageMeta = soup.find("meta", property="og:image")
         descriptionMeta = soup.find("meta", property="og:description")
         return {
@@ -77,7 +77,7 @@ def generate_youtube_tv():
 
                 channel_no += 1
                 channel_name = f"{channel_no}-{line.split('/')[-1]}"
-                playlistInfo = f"#EXTINF:-1 tvg-chno=\"{channel_no}\" tvg-id=\"{line}\" tvg-name=\"{channel_name}\" tvg-logo=\"{channel.get('image')}\" group-title=\"ARGENTINA\",{canal}\n"
+                playlistInfo = f"#EXTINF:-1 tvg-chno=\"{channel_no}\" tvg-id=\"{line}\" tvg-name=\"{channel_name}\" tvg-logo=\"{channel.get('image')}\" group-title=\"ARGENTINA\",{nomedocanalMeta}\n"
                 write_to_playlist(playlistInfo)
                 write_to_playlist(video_url)
                 write_to_playlist("\n")
