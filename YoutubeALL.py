@@ -18,7 +18,7 @@ def get_live_info(channel_id):
         url = urlMeta.get("content")
         if(url is None or url.find("/watch?v=") == -1):
             return None
-        titleMeta = soup.find("meta", property="title")
+        titleMeta = soup.find("meta", property="itemprop="name"")
         imageMeta = soup.find("meta", property="og:image")
         descriptionMeta = soup.find("meta", property="og:description")
         return {
