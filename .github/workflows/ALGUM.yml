@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Separados
+name: ALGUM
 # Controls when the action will run. 
 on:
   schedule:
@@ -38,17 +38,9 @@ jobs:
          
         
       - name: execute py script
-        run: python Church.py
+        run: python YoutubeALL.py
         
-      - name: execute py script 2
-        run: python Languages.py
-        
-      - name: execute py script 3
-        run: python ucraniatv.py
-        
-        
-      
-      
+
 
         
       - name: commit files
