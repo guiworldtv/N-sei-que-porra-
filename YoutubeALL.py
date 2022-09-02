@@ -1,12 +1,10 @@
 #! /usr/bin/python3
-from __future__ import unicode_literals
 from yt_dlp import YoutubeDL
 
-
+from __future__ import unicode_literals
 import youtube_dl
 import requests
 import shutil
-import streamlink
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 channel_no = 0
@@ -62,7 +60,7 @@ def generate_youtube_tv():
             try:
                 with ydl:
                     result = ydl.extract_info(
-                        f"{line}",
+                        f"{line}/live",
                         download=False  # We just want to extract the info
                     )
 
@@ -72,7 +70,7 @@ def generate_youtube_tv():
                     else:
                         # Just a video
                         video = result
-                video_url = [(streamlink --url --default-stream  --stream-url) (channel_id)]
+                video_url = video['url']
 
                 channel_no += 1
                 channel_name = f"{channel_no}-{line.split('/')[-1]}"
