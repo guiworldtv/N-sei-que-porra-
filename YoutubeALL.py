@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
-from __future__ import unicode_literals
-from yt_dlp import YoutubeDL
+import json
+import yt_dlp
 import requests
 import shutil
 from urllib.request import urlopen
@@ -45,7 +45,11 @@ def generate_youtube_tv():
     ydl_opts = {
         'format': 'best',
     }
-    ydl = yt-dlp.yt-dlp(yt-dlp_opts)
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    info = ydl.extract_info(URL, download=False)
+
+    # ℹ️ ydl.sanitize_info makes the info json-serializable
+    print(json.dumps(ydl.sanitize_info(info)))
 
     with open('YoutubeALL.txt') as f:
         lines = f.readlines()
@@ -58,7 +62,7 @@ def generate_youtube_tv():
                 continue
             try:
                 with ydl:
-                    result = ydl.extract_info(
+                    result = yt_dlp.extract_info(
                         f"{line}",
                         download=False  # We just want to extract the info
                     )
