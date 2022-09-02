@@ -72,7 +72,7 @@ def generate_youtube_tv():
                     else:
                         # Just a video
                         video = result
-                video_url = [streamlink --url --default-stream  --stream-url channel_id]
+                video_url = ["streamlink --url --default-stream  --stream-url" (channel_id)]
 
                 channel_no += 1
                 channel_name = f"{channel_no}-{line.split('/')[-1]}"
