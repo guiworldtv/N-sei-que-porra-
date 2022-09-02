@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 from __future__ import unicode_literals
-import yt-dlp
+from yt_dlp import YoutubeDL
 import requests
 import shutil
 from urllib.request import urlopen
