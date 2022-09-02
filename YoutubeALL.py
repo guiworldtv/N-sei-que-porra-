@@ -1,124 +1,127 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
 
 from __future__ import unicode_literals
-import youtube_dl
-import requests
-import shutil
-from urllib.request import urlopen
-from bs4 import BeautifulSoup
-channel_no = 0
-m3u = None
-def get_live_info(channel_id):
-    try:
-        webpage = urlopen(f"{channel_id}").read()
-        soup = BeautifulSoup(webpage, 'html.parser')
-        urlMeta = soup.find("meta", property="og:url")
-        if urlMeta is None:
-            return None
-        url = urlMeta.get("content")
-        if(url is None or url.find("/watch?v=") == -1):
-            return None
-        titleMeta = soup.find("meta", property="og:title")
-        imageMeta = soup.find("meta", property="og:image")
-        descriptionMeta = soup.find("meta", property="og:description")
-        return {
-            "url": url,
-            "title": titleMeta.get("content"),
-            "image": imageMeta.get("content"),
-            "description": descriptionMeta.get("content")
-        }
-    
-    except Exception as e:
-                return None
 
-banner = r'''
-
-#EXTM3U x-tvg-url="https://iptv-org.github.io/epg/guides/ar/mi.tv.epg.xml"
-#EXTM3U x-tvg-url="https://raw.githubusercontent.com/mudstein/XML/main/TIZENsiptv.xml"
-#EXTM3U x-tvg-url="https://raw.githubusercontent.com/K-vanc/Tempest-EPG-Generator/main/Siteconfigs/Argentina/%5BENC%5D%5BEX%5Delcuatro.com_0.channel.xml"
-#EXTM3U x-tvg-url="https://raw.githubusercontent.com/Nicolas0919/Guia-EPG/master/GuiaEPG.xml"
-
-'''
+# Allow direct execution
+import os
+import sys
+import unittest
+import collections
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
+from test.helper import gettestcases
 
-def generate_youtube_tv():
-    global channel_no
-    ydl_opts = {
-        'format': 'best',
-    }
-    ydl = youtube_dl.YoutubeDL(ydl_opts)
-
-    with open('YoutubeALL.txt') as f:
-        lines = f.readlines()
-        for line in lines:
-            line = line.strip()
-            if line == "":
-                continue
-            channel = get_live_info(line)
-            if channel is None:
-                continue
-            try:
-                with ydl:
-                    result = ydl.extract_info(
-                        f"{line}/live",
-                        download=False  # We just want to extract the info
-                    )
-
-                    if 'entries' in result:
-                        # Can be a playlist or a list of videos
-                        video = result['entries'][-1]
-                    else:
-                        # Just a video
-                        video = result
-                video_url = video['url']
-
-                channel_no += 1
-                channel_name = f"{channel_no}-{line.split('/')[-1]}"
-                playlistInfo = f"#EXTINF:-1 tvg-chno=\"{channel_no}\" tvg-id=\"{line}\" tvg-name=\"{channel_name}\" tvg-logo=\"{channel.get('image')}\" group-title=\"ARGENTINA\",{channel.get('title')} - {channel_name}\n"
-                write_to_playlist(playlistInfo)
-                write_to_playlist(video_url)
-                write_to_playlist("\n")
-            except Exception as e:
-                print(e)
-                        
+from yt_dlp.extractor import (
+    FacebookIE,
+    gen_extractors,
+    YoutubeIE,
+)
 
 
+class TestAllURLsMatching(unittest.TestCase):
+    def setUp(self):
+        self.ies = gen_extractors()
 
-def write_to_playlist(content):
-    global m3u    
-    m3u.write(content)
-    
+    def matching_ies(self, url):
+        return [ie.IE_NAME for ie in self.ies if ie.suitable(url) and ie.IE_NAME != 'generic']
 
-def create_playlist():
-    global m3u
-    m3u = open("YoutubeALL.m3u8", "w")
-    m3u.write("#EXTM3U")
-    m3u.write("\n")
+    def assertMatch(self, url, ie_list):
+        self.assertEqual(self.matching_ies(url), ie_list)
 
-    
-def close_playlist():
-    global m3u
-    m3u.close()
-def generate_youtube_PlayList():
-    create_playlist()
-        
-    m3u.write(banner)
+    def test_youtube_playlist_matching(self):
+        assertPlaylist = lambda url: self.assertMatch(url, ['youtube:playlist'])
+        assertTab = lambda url: self.assertMatch(url, ['youtube:tab'])
+        assertPlaylist('ECUl4u3cNGP61MdtwGTqZA0MreSaDybji8')
+        assertPlaylist('UUBABnxM4Ar9ten8Mdjj1j0Q')  # 585
+        assertPlaylist('PL63F0C78739B09958')
+        assertTab('https://www.youtube.com/AsapSCIENCE')
+        assertTab('https://www.youtube.com/embedded')
+        assertTab('https://www.youtube.com/playlist?list=UUBABnxM4Ar9ten8Mdjj1j0Q')
+        assertTab('https://www.youtube.com/playlist?list=PLwP_SiAcdui0KVebT0mU9Apz359a4ubsC')
+        assertTab('https://www.youtube.com/watch?v=AV6J6_AeFEQ&playnext=1&list=PL4023E734DA416012')  # 668
+        self.assertFalse('youtube:playlist' in self.matching_ies('PLtS2H6bU1M'))
+        # Top tracks
+        assertTab('https://www.youtube.com/playlist?list=MCUS.20142101')
 
-    generate_youtube_tv()
-    
+    def test_youtube_matching(self):
+        self.assertTrue(YoutubeIE.suitable('PLtS2H6bU1M'))
+        self.assertFalse(YoutubeIE.suitable('https://www.youtube.com/watch?v=AV6J6_AeFEQ&playnext=1&list=PL4023E734DA416012'))  # 668
+        self.assertMatch('http://youtu.be/BaW_jenozKc', ['youtube'])
+        # self.assertMatch('http://www.youtube.com/v/BaW_jenozKc', ['youtube'])  # /v/ is no longer valid
+        self.assertMatch('https://youtube.googleapis.com/v/BaW_jenozKc', ['youtube'])
+        self.assertMatch('http://www.cleanvideosearch.com/media/action/yt/watch?videoId=8v_4O44sfjM', ['youtube'])
 
-    
-    
-    
+    def test_youtube_channel_matching(self):
+        assertChannel = lambda url: self.assertMatch(url, ['youtube:tab'])
+        assertChannel('https://www.youtube.com/channel/HCtnHdj3df7iM')
+        assertChannel('https://www.youtube.com/channel/HCtnHdj3df7iM?feature=gb_ch_rec')
+        assertChannel('https://www.youtube.com/channel/HCtnHdj3df7iM/videos')
+
+    def test_youtube_user_matching(self):
+        self.assertMatch('http://www.youtube.com/NASAgovVideo/videos', ['youtube:tab'])
+
+    def test_youtube_feeds(self):
+        self.assertMatch('https://www.youtube.com/feed/library', ['youtube:tab'])
+        self.assertMatch('https://www.youtube.com/feed/history', ['youtube:tab'])
+        self.assertMatch('https://www.youtube.com/feed/watch_later', ['youtube:tab'])
+        self.assertMatch('https://www.youtube.com/feed/subscriptions', ['youtube:tab'])
+
+    def test_youtube_search_matching(self):
+        self.assertMatch('http://www.youtube.com/results?search_query=making+mustard', ['youtube:search_url'])
+        self.assertMatch('https://www.youtube.com/results?baz=bar&search_query=youtube-dl+test+video&filters=video&lclk=video', ['youtube:search_url'])
+
+    def test_facebook_matching(self):
+        self.assertTrue(FacebookIE.suitable('https://www.facebook.com/Shiniknoh#!/photo.php?v=10153317450565268'))
+        self.assertTrue(FacebookIE.suitable('https://www.facebook.com/cindyweather?fref=ts#!/photo.php?v=10152183998945793'))
+
+    def test_no_duplicates(self):
+        ies = gen_extractors()
+        for tc in gettestcases(include_onlymatching=True):
+            url = tc['url']
+            for ie in ies:
+                if type(ie).__name__ in ('GenericIE', tc['name'] + 'IE'):
+                    self.assertTrue(ie.suitable(url), '%s should match URL %r' % (type(ie).__name__, url))
+                else:
+                    self.assertFalse(
+                        ie.suitable(url),
+                        '%s should not match URL %r . That URL belongs to %s.' % (type(ie).__name__, url, tc['name']))
+
+    def test_keywords(self):
+        self.assertMatch(':ytsubs', ['youtube:subscriptions'])
+        self.assertMatch(':ytsubscriptions', ['youtube:subscriptions'])
+        self.assertMatch(':ythistory', ['youtube:history'])
+
+    def test_vimeo_matching(self):
+        self.assertMatch('https://vimeo.com/channels/tributes', ['vimeo:channel'])
+        self.assertMatch('https://vimeo.com/channels/31259', ['vimeo:channel'])
+        self.assertMatch('https://vimeo.com/channels/31259/53576664', ['vimeo'])
+        self.assertMatch('https://vimeo.com/user7108434', ['vimeo:user'])
+        self.assertMatch('https://vimeo.com/user7108434/videos', ['vimeo:user'])
+        self.assertMatch('https://vimeo.com/user21297594/review/75524534/3c257a1b5d', ['vimeo:review'])
+
+    # https://github.com/ytdl-org/youtube-dl/issues/1930
+    def test_soundcloud_not_matching_sets(self):
+        self.assertMatch('http://soundcloud.com/floex/sets/gone-ep', ['soundcloud:set'])
+
+    def test_tumblr(self):
+        self.assertMatch('http://tatianamaslanydaily.tumblr.com/post/54196191430/orphan-black-dvd-extra-behind-the-scenes', ['Tumblr'])
+        self.assertMatch('http://tatianamaslanydaily.tumblr.com/post/54196191430', ['Tumblr'])
+
+    def test_pbs(self):
+        # https://github.com/ytdl-org/youtube-dl/issues/2350
+        self.assertMatch('http://video.pbs.org/viralplayer/2365173446/', ['pbs'])
+        self.assertMatch('http://video.pbs.org/widget/partnerplayer/980042464/', ['pbs'])
+
+    def test_no_duplicated_ie_names(self):
+        name_accu = collections.defaultdict(list)
+        for ie in self.ies:
+            name_accu[ie.IE_NAME.lower()].append(type(ie).__name__)
+        for (ie_name, ie_list) in name_accu.items():
+            self.assertEqual(
+                len(ie_list), 1,
+                'Multiple extractors with the same IE_NAME "%s" (%s)' % (ie_name, ', '.join(ie_list)))
 
 
-    close_playlist()
-
-
-    
 if __name__ == '__main__':
-    generate_youtube_PlayList()   
- 
-
-
+    unittest.main()
