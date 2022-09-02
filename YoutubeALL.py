@@ -21,8 +21,7 @@ print(result['uploader'],result['fps'])
 
 
 
-from __future__ import unicode_literals
-import youtube_dl
+
 
 
 class MyLogger(object):
