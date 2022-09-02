@@ -4,5 +4,3 @@ beautifulsoup4
 fastapi
 uvicorn
 schedule
-yt-dlp
-test.helper
