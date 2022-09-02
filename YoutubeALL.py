@@ -61,7 +61,7 @@ def generate_youtube_tv():
             try:
                 with ydl:
                     result = ydl.extract_info(
-                        f"{line}/live",
+                        f"{line}",
                         download=False  # We just want to extract the info
                     )
 
@@ -71,7 +71,7 @@ def generate_youtube_tv():
                     else:
                         # Just a video
                         video = result
-                video_url = $['streamlink --url --default-stream  --stream-url']
+                video_url = ['streamlink --url --default-stream  --stream-url']
 
                 channel_no += 1
                 channel_name = f"{channel_no}-{line.split('/')[-1]}"
