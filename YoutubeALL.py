@@ -46,7 +46,7 @@ def generate_youtube_tv():
         'format': 'best',
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-    info = ydl.extract_info(URL, download=False)
+    info = ydl.extract_info(with open ('YoutubeALL.txt'), download=False)
 
     # ℹ️ ydl.sanitize_info makes the info json-serializable
     print(json.dumps(ydl.sanitize_info(info)))
