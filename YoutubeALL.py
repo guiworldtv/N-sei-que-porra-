@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
-import json
-import yt_dlp
+from __future__ import unicode_literals
+import youtube_dl
 import requests
 import shutil
 from urllib.request import urlopen
@@ -40,15 +40,14 @@ banner = r'''
 
 '''
 
-URL = with open('YoutubeALL.txt')
+
 
 def generate_youtube_tv():
     global channel_no
     ydl_opts = {
         'format': 'best',
     }
-with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-    info = ydl.extract_info(URL, download=False)
+    ydl = youtube_dl.YoutubeDL(ydl_opts)
 
     with open('YoutubeALL.txt') as f:
         lines = f.readlines()
