@@ -63,7 +63,7 @@ with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             try:
                 with ydl:
                     result = ydl.extract_info(
-                        f"{line}/live",
+                        f"{line}",
                         download=False  # We just want to extract the info
                     )
 
