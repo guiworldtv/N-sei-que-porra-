@@ -1,7 +1,8 @@
 #! /usr/bin/python3
+from __future__ import unicode_literals
 from yt_dlp import YoutubeDL
 
-from __future__ import unicode_literals
+
 import youtube_dl
 import requests
 import shutil
