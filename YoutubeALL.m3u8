@@ -6,5 +6,5 @@
 #EXTM3U x-tvg-url="https://raw.githubusercontent.com/K-vanc/Tempest-EPG-Generator/main/Siteconfigs/Argentina/%5BENC%5D%5BEX%5Delcuatro.com_0.channel.xml"
 #EXTM3U x-tvg-url="https://raw.githubusercontent.com/Nicolas0919/Guia-EPG/master/GuiaEPG.xml"
 
-#EXTINF:-1 tvg-chno="1" tvg-id="https://vimeo.com/745508581" tvg-name="1-745508581" tvg-logo="https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F1499430526-e6402dcd0ca2c736f05943cb314d1e13cfd81c90dc19a902ee01c16374d98266-d_1280x853&src1=https%3A%2F%2Ff.vimeocdn.com%2Fimages_v6%2Fshare%2Fplay_icon_overlay.png" group-title="ARGENTINA",201900075a4 (480p) - 1-745508581
-https://200vod-adaptive.akamaized.net/exp=1662093866~acl=%2Fd0b91573-d4d6-4edd-9088-54326def6827%2F%2A~hmac=f6d71f7095d1ace9385eb4f1c251b002fabb36d27c40a724da10b386b9c973d5/d0b91573-d4d6-4edd-9088-54326def6827/video/8bd38425/playlist.m3u8?query_string_ranges=1
+#EXTINF:-1 tvg-chno="1" tvg-id="https://vimeo.com/34185711" tvg-name="1-34185711" tvg-logo="https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F232613304-75e3a9a91997db035275ed99a8f0da56e666f932b6732a5af9aa64ab21d4a70f-d_1280x719&src1=https%3A%2F%2Ff.vimeocdn.com%2Fimages_v6%2Fshare%2Fplay_icon_overlay.png" group-title="ARGENTINA",Blink-182 - After Midnight (Official Music Video) - 1-34185711
+https://skyfire.vimeocdn.com/1662081812-0x11aab73558dc945394621665b6a5484b31ab9212/f6aaa4f6-b538-4066-8bba-27cff8df451d/video/4b37b5a3/master.mpd?base64_init=1
