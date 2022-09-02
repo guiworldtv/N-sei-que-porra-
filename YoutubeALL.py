@@ -1,221 +1,125 @@
-#!/usr/bin/env python
+#! /usr/bin/python3
 
-from __future__ import unicode_literals
+import json
+import yt_dlp
+import requests
+import shutil
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
+channel_no = 0
+m3u = None
+def get_live_info(channel_id):
+    try:
+        webpage = urlopen(f"{channel_id}").read()
+        soup = BeautifulSoup(webpage, 'html.parser')
+        urlMeta = soup.find("meta", property="og:url")
+        if urlMeta is None:
+            return None
+        url = urlMeta.get("content")
+        if(url is None or url.find("/watch?v=") == -1):
+            return None
+        titleMeta = soup.find("meta", property="og:title")
+        imageMeta = soup.find("meta", property="og:image")
+        descriptionMeta = soup.find("meta", property="og:description")
+        return {
+            "url": url,
+            "title": titleMeta.get("content"),
+            "image": imageMeta.get("content"),
+            "description": descriptionMeta.get("content")
+        }
+    
+    except Exception as e:
+                return None
 
-# Allow direct execution
-import os
-import sys
-import unittest
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+banner = r'''
 
-import io
-import re
-import string
+#EXTM3U x-tvg-url="https://iptv-org.github.io/epg/guides/ar/mi.tv.epg.xml"
+#EXTM3U x-tvg-url="https://raw.githubusercontent.com/mudstein/XML/main/TIZENsiptv.xml"
+#EXTM3U x-tvg-url="https://raw.githubusercontent.com/K-vanc/Tempest-EPG-Generator/main/Siteconfigs/Argentina/%5BENC%5D%5BEX%5Delcuatro.com_0.channel.xml"
+#EXTM3U x-tvg-url="https://raw.githubusercontent.com/Nicolas0919/Guia-EPG/master/GuiaEPG.xml"
 
-from youtube_dl.compat import compat_str, compat_urlretrieve
+'''
 
-from test.helper import FakeYDL
-from youtube_dl.extractor import YoutubeIE
-from youtube_dl.jsinterp import JSInterpreter
+URL = with open('YoutubeALL.txt')
 
-_SIG_TESTS = [
-    (
-        'https://s.ytimg.com/yts/jsbin/html5player-vflHOr_nV.js',
-        86,
-        '>=<;:/.-[+*)(\'&%$#"!ZYX0VUTSRQPONMLKJIHGFEDCBA\\yxwvutsrqponmlkjihgfedcba987654321',
-    ),
-    (
-        'https://s.ytimg.com/yts/jsbin/html5player-vfldJ8xgI.js',
-        85,
-        '3456789a0cdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS[UVWXYZ!"#$%&\'()*+,-./:;<=>?@',
-    ),
-    (
-        'https://s.ytimg.com/yts/jsbin/html5player-vfle-mVwz.js',
-        90,
-        ']\\[@?>=<;:/.-,+*)(\'&%$#"hZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjiagfedcb39876',
-    ),
-    (
-        'https://s.ytimg.com/yts/jsbin/html5player-en_US-vfl0Cbn9e.js',
-        84,
-        'O1I3456789abcde0ghijklmnopqrstuvwxyzABCDEFGHfJKLMN2PQRSTUVW@YZ!"#$%&\'()*+,-./:;<=',
-    ),
-    (
-        'https://s.ytimg.com/yts/jsbin/html5player-en_US-vflXGBaUN.js',
-        '2ACFC7A61CA478CD21425E5A57EBD73DDC78E22A.2094302436B2D377D14A3BBA23022D023B8BC25AA',
-        'A52CB8B320D22032ABB3A41D773D2B6342034902.A22E87CDD37DBE75A5E52412DC874AC16A7CFCA2',
-    ),
-    (
-        'https://s.ytimg.com/yts/jsbin/html5player-en_US-vflBb0OQx.js',
-        84,
-        '123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ0STUVWXYZ!"#$%&\'()*+,@./:;<=>'
-    ),
-    (
-        'https://s.ytimg.com/yts/jsbin/html5player-en_US-vfl9FYC6l.js',
-        83,
-        '123456789abcdefghijklmnopqr0tuvwxyzABCDETGHIJKLMNOPQRS>UVWXYZ!"#$%&\'()*+,-./:;<=F'
-    ),
-    (
-        'https://s.ytimg.com/yts/jsbin/html5player-en_US-vflCGk6yw/html5player.js',
-        '4646B5181C6C3020DF1D9C7FCFEA.AD80ABF70C39BD369CCCAE780AFBB98FA6B6CB42766249D9488C288',
-        '82C8849D94266724DC6B6AF89BBFA087EACCD963.B93C07FBA084ACAEFCF7C9D1FD0203C6C1815B6B'
-    ),
-    (
-        'https://s.ytimg.com/yts/jsbin/html5player-en_US-vflKjOTVq/html5player.js',
-        '312AA52209E3623129A412D56A40F11CB0AF14AE.3EE09501CB14E3BCDC3B2AE808BF3F1D14E7FBF12',
-        '112AA5220913623229A412D56A40F11CB0AF14AE.3EE0950FCB14EEBCDC3B2AE808BF331D14E7FBF3',
-    )
-]
+def generate_youtube_tv():
+    global channel_no
+    ydl_opts = {
+        'format': 'best',
+    }
+with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    info = ydl.extract_info(URL, download=False)
 
-_NSIG_TESTS = [
-    (
-        'https://www.youtube.com/s/player/9216d1f7/player_ias.vflset/en_US/base.js',
-        'SLp9F5bwjAdhE9F-', 'gWnb9IK2DJ8Q1w',
-    ),
-    (
-        'https://www.youtube.com/s/player/f8cb7a3b/player_ias.vflset/en_US/base.js',
-        'oBo2h5euWy6osrUt', 'ivXHpm7qJjJN',
-    ),
-    (
-        'https://www.youtube.com/s/player/2dfe380c/player_ias.vflset/en_US/base.js',
-        'oBo2h5euWy6osrUt', '3DIBbn3qdQ',
-    ),
-    (
-        'https://www.youtube.com/s/player/f1ca6900/player_ias.vflset/en_US/base.js',
-        'cu3wyu6LQn2hse', 'jvxetvmlI9AN9Q',
-    ),
-    (
-        'https://www.youtube.com/s/player/8040e515/player_ias.vflset/en_US/base.js',
-        'wvOFaY-yjgDuIEg5', 'HkfBFDHmgw4rsw',
-    ),
-    (
-        'https://www.youtube.com/s/player/e06dea74/player_ias.vflset/en_US/base.js',
-        'AiuodmaDDYw8d3y4bf', 'ankd8eza2T6Qmw',
-    ),
-    (
-        'https://www.youtube.com/s/player/5dd88d1d/player-plasma-ias-phone-en_US.vflset/base.js',
-        'kSxKFLeqzv_ZyHSAt', 'n8gS8oRlHOxPFA',
-    ),
-    (
-        'https://www.youtube.com/s/player/324f67b9/player_ias.vflset/en_US/base.js',
-        'xdftNy7dh9QGnhW', '22qLGxrmX8F1rA',
-    ),
-    (
-        'https://www.youtube.com/s/player/4c3f79c5/player_ias.vflset/en_US/base.js',
-        'TDCstCG66tEAO5pR9o', 'dbxNtZ14c-yWyw',
-    ),
-    (
-        'https://www.youtube.com/s/player/c81bbb4a/player_ias.vflset/en_US/base.js',
-        'gre3EcLurNY2vqp94', 'Z9DfGxWP115WTg',
-    ),
-    (
-        'https://www.youtube.com/s/player/1f7d5369/player_ias.vflset/en_US/base.js',
-        'batNX7sYqIJdkJ', 'IhOkL_zxbkOZBw',
-    ),
-    (
-        'https://www.youtube.com/s/player/009f1d77/player_ias.vflset/en_US/base.js',
-        '5dwFHw8aFWQUQtffRq', 'audescmLUzI3jw',
-    ),
-    (
-        'https://www.youtube.com/s/player/dc0c6770/player_ias.vflset/en_US/base.js',
-        '5EHDMgYLV6HPGk_Mu-kk', 'n9lUJLHbxUI0GQ',
-    ),
-    (
-        'https://www.youtube.com/s/player/c2199353/player_ias.vflset/en_US/base.js',
-        '5EHDMgYLV6HPGk_Mu-kk', 'AD5rgS85EkrE7',
-    ),
-    (
-        'https://www.youtube.com/s/player/113ca41c/player_ias.vflset/en_US/base.js',
-        'cgYl-tlYkhjT7A', 'hI7BBr2zUgcmMg',
-    ),
-    (
-        'https://www.youtube.com/s/player/c57c113c/player_ias.vflset/en_US/base.js',
-        '-Txvy6bT5R6LqgnQNx', 'dcklJCnRUHbgSg',
-    ),
-]
+    with open('YoutubeALL.txt') as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.strip()
+            if line == "":
+                continue
+            channel = get_live_info(line)
+            if channel is None:
+                continue
+            try:
+                with ydl:
+                    result = ydl.extract_info(
+                        f"{line}/live",
+                        download=False  # We just want to extract the info
+                    )
+
+                    if 'entries' in result:
+                        # Can be a playlist or a list of videos
+                        video = result['entries'][-1]
+                    else:
+                        # Just a video
+                        video = result
+                video_url = video['url']
+
+                channel_no += 1
+                channel_name = f"{channel_no}-{line.split('/')[-1]}"
+                playlistInfo = f"#EXTINF:-1 tvg-chno=\"{channel_no}\" tvg-id=\"{line}\" tvg-name=\"{channel_name}\" tvg-logo=\"{channel.get('image')}\" group-title=\"ARGENTINA\",{channel.get('title')} - {channel_name}\n"
+                write_to_playlist(playlistInfo)
+                write_to_playlist(video_url)
+                write_to_playlist("\n")
+            except Exception as e:
+                print(e)
+                        
 
 
-class TestPlayerInfo(unittest.TestCase):
-    def test_youtube_extract_player_info(self):
-        PLAYER_URLS = (
-            ('https://www.youtube.com/s/player/4c3f79c5/player_ias.vflset/en_US/base.js', '4c3f79c5'),
-            ('https://www.youtube.com/s/player/64dddad9/player_ias.vflset/en_US/base.js', '64dddad9'),
-            ('https://www.youtube.com/s/player/64dddad9/player_ias.vflset/fr_FR/base.js', '64dddad9'),
-            ('https://www.youtube.com/s/player/64dddad9/player-plasma-ias-phone-en_US.vflset/base.js', '64dddad9'),
-            ('https://www.youtube.com/s/player/64dddad9/player-plasma-ias-phone-de_DE.vflset/base.js', '64dddad9'),
-            ('https://www.youtube.com/s/player/64dddad9/player-plasma-ias-tablet-en_US.vflset/base.js', '64dddad9'),
-            # obsolete
-            ('https://www.youtube.com/yts/jsbin/player_ias-vfle4-e03/en_US/base.js', 'vfle4-e03'),
-            ('https://www.youtube.com/yts/jsbin/player_ias-vfl49f_g4/en_US/base.js', 'vfl49f_g4'),
-            ('https://www.youtube.com/yts/jsbin/player_ias-vflCPQUIL/en_US/base.js', 'vflCPQUIL'),
-            ('https://www.youtube.com/yts/jsbin/player-vflzQZbt7/en_US/base.js', 'vflzQZbt7'),
-            ('https://www.youtube.com/yts/jsbin/player-en_US-vflaxXRn1/base.js', 'vflaxXRn1'),
-            ('https://s.ytimg.com/yts/jsbin/html5player-en_US-vflXGBaUN.js', 'vflXGBaUN'),
-            ('https://s.ytimg.com/yts/jsbin/html5player-en_US-vflKjOTVq/html5player.js', 'vflKjOTVq'),
-        )
-        for player_url, expected_player_id in PLAYER_URLS:
-            player_id = YoutubeIE._extract_player_info(player_url)
-            self.assertEqual(player_id, expected_player_id)
+
+def write_to_playlist(content):
+    global m3u    
+    m3u.write(content)
+    
+
+def create_playlist():
+    global m3u
+    m3u = open("YoutubeALL.m3u8", "w")
+    m3u.write("#EXTM3U")
+    m3u.write("\n")
+
+    
+def close_playlist():
+    global m3u
+    m3u.close()
+def generate_youtube_PlayList():
+    create_playlist()
+        
+    m3u.write(banner)
+
+    generate_youtube_tv()
+    
+
+    
+    
+    
 
 
-class TestSignature(unittest.TestCase):
-    def setUp(self):
-        TEST_DIR = os.path.dirname(os.path.abspath(__file__))
-        self.TESTDATA_DIR = os.path.join(TEST_DIR, 'testdata/sigs')
-        if not os.path.exists(self.TESTDATA_DIR):
-            os.mkdir(self.TESTDATA_DIR)
-
-    def tearDown(self):
-        try:
-            for f in os.listdir(self.TESTDATA_DIR):
-                os.remove(f)
-        except OSError:
-            pass
+    close_playlist()
 
 
-def t_factory(name, sig_func, url_pattern):
-    def make_tfunc(url, sig_input, expected_sig):
-        m = url_pattern.match(url)
-        assert m, '%r should follow URL format' % url
-        test_id = m.group('id')
-
-        def test_func(self):
-            basename = 'player-{0}-{1}.js'.format(name, test_id)
-            fn = os.path.join(self.TESTDATA_DIR, basename)
-
-            if not os.path.exists(fn):
-                compat_urlretrieve(url, fn)
-            with io.open(fn, encoding='utf-8') as testf:
-                jscode = testf.read()
-            self.assertEqual(sig_func(jscode, sig_input), expected_sig)
-
-        test_func.__name__ = str('test_{0}_js_{1}'.format(name, test_id))
-        setattr(TestSignature, test_func.__name__, test_func)
-    return make_tfunc
-
-
-def signature(jscode, sig_input):
-    func = YoutubeIE(FakeYDL())._parse_sig_js(jscode)
-    src_sig = (
-        compat_str(string.printable[:sig_input])
-        if isinstance(sig_input, int) else sig_input)
-    return func(src_sig)
-
-
-def n_sig(jscode, sig_input):
-    funcname = YoutubeIE(FakeYDL())._extract_n_function_name(jscode)
-    return JSInterpreter(jscode).call_function(funcname, sig_input)
-
-
-make_sig_test = t_factory(
-    'signature', signature, re.compile(r'.*-(?P<id>[a-zA-Z0-9_-]+)(?:/watch_as3|/html5player)?\.[a-z]+$'))
-for test_spec in _SIG_TESTS:
-    make_sig_test(*test_spec)
-
-make_nsig_test = t_factory(
-    'nsig', n_sig, re.compile(r'.+/player/(?P<id>[a-zA-Z0-9_-]+)/.+.js$'))
-for test_spec in _NSIG_TESTS:
-    make_nsig_test(*test_spec)
-
-
+    
 if __name__ == '__main__':
-    unittest.main()
+    generate_youtube_PlayList()   
+ 
+
+
