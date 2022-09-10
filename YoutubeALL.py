@@ -10,3 +10,17 @@ with yt_dlp.YoutubeDL(ydl_opts) as ydl:
 
     # ℹ️ ydl.sanitize_info makes the info json-serializable
     print(json.dumps(ydl.sanitize_info(info)))
+    
+
+    
+    write_to_playlist(info)
+    
+    
+def write_to_playlist(content):
+    global m3u    
+    m3u.write(content)
+
+
+def create_playlist():
+    global m3u
+    m3u = open("YoutubeALL.m3u8", "w")
