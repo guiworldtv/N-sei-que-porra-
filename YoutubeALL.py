@@ -9,7 +9,7 @@ URL = 'https://www.youtube.com/watch?v=6_P_4TiK7zw'
 
 # ℹ️ See help(yt_dlp.YoutubeDL) for a list of available options and public functions
 def generate_youtube_tv():
-
+    global channel_no
     ydl_opts = {}
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
