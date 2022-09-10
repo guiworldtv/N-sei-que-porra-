@@ -13,7 +13,7 @@ with yt_dlp.YoutubeDL(ydl_opts) as ydl:
     
 
     
-    write_to_playlist(info)
+    write_to_playlist(json.dumps(ydl.sanitize_info(info)
     
     
 def write_to_playlist(content):
@@ -24,3 +24,16 @@ def write_to_playlist(content):
 def create_playlist():
     global m3u
     m3u = open("YoutubeALL.m3u8", "w")
+
+def close_playlist():
+    global m3u
+    m3u.close()
+                                 
+def generate_youtube_PlayList():
+    create_playlist()
+                                 
+                                 
+    close_playlist()                                 
+                                 
+if __name__ == '__main__':
+    generate_youtube_PlayList()                                    
