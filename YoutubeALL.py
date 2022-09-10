@@ -3,6 +3,7 @@ import requests
 import shutil
 import json
 import yt_dlp
+m3u = None
 
 URL = 'https://www.youtube.com/watch?v=BaW_jenozKc'
 
