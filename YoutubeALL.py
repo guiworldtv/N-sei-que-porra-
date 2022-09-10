@@ -5,7 +5,7 @@ URL = 'https://www.youtube.com/watch?v=BaW_jenozKc'
 
 # ℹ️ See help(yt_dlp.YoutubeDL) for a list of available options and public functions
 ydl_opts = {
-    'title',
+    "title",
     }
 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
     info = ydl.extract_info(URL, download=False)
