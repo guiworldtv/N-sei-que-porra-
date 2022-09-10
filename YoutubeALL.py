@@ -1,49 +1,58 @@
-from __future__ import unicode_literals
-import requests
-import shutil
-import json
-import yt_dlp
-m3u = None
+#!/usr/bin/env python3
 
-URL = 'https://www.youtube.com/watch?v=6_P_4TiK7zw'
+# Allow direct execution
+import os
+import sys
+import unittest
 
-# ℹ️ See help(yt_dlp.YoutubeDL) for a list of available options and public functions
-def generate_youtube_tv():
-    global channel_no
-    ydl_opts = {}
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-    info = ydl.extract_info(URL, download=False)
-
-    # ℹ️ ydl.sanitize_info makes the info json-serializable
-    print(json.dumps(ydl.sanitize_info(info)))
-    
-
-    
-    write_to_playlist = info
-    
-    
-def write_to_playlist(content):
-    global m3u    
-    m3u.write(content)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-def create_playlist():
-    global m3u
-    m3u = open("YoutubeALL.m3u8", "w")
-    m3u.write("#EXTM3U")
-    m3u.write("\n")                                 
+from test.helper import FakeYDL, is_download_test
+from yt_dlp.extractor import YoutubeIE, YoutubeTabIE
 
-def close_playlist():
-    global m3u
-    m3u.close()
-                                 
-def generate_youtube_PlayList():
-    create_playlist()
-                                 
-    generate_youtube_tv()
-                                   
-    close_playlist()                                 
-                                 
+
+@is_download_test
+class TestYoutubeLists(unittest.TestCase):
+    def assertIsPlaylist(self, info):
+        """Make sure the info has '_type' set to 'playlist'"""
+        self.assertEqual(info['_type'], 'playlist')
+
+    def test_youtube_playlist_noplaylist(self):
+        dl = FakeYDL()
+        dl.params['noplaylist'] = True
+        ie = YoutubeTabIE(dl)
+        result = ie.extract('https://www.youtube.com/watch?v=OmJ-4B-mS-Y&list=PLydZ2Hrp_gPRJViZjLFKaBMgCQOYEEkyp&index=2')
+        self.assertEqual(result['_type'], 'url')
+        self.assertEqual(result['ie_key'], YoutubeIE.ie_key())
+        self.assertEqual(YoutubeIE.extract_id(result['url']), 'OmJ-4B-mS-Y')
+
+    def test_youtube_mix(self):
+        dl = FakeYDL()
+        ie = YoutubeTabIE(dl)
+        result = ie.extract('https://www.youtube.com/watch?v=tyITL_exICo&list=RDCLAK5uy_kLWIr9gv1XLlPbaDS965-Db4TrBoUTxQ8')
+        entries = list(result['entries'])
+        self.assertTrue(len(entries) >= 50)
+        original_video = entries[0]
+        self.assertEqual(original_video['id'], 'tyITL_exICo')
+
+    def test_youtube_flat_playlist_extraction(self):
+        dl = FakeYDL()
+        dl.params['extract_flat'] = True
+        ie = YoutubeTabIE(dl)
+        result = ie.extract('https://www.youtube.com/playlist?list=PL4lCao7KL_QFVb7Iudeipvc2BCavECqzc')
+        self.assertIsPlaylist(result)
+        entries = list(result['entries'])
+        self.assertTrue(len(entries) == 1)
+        video = entries[0]
+        self.assertEqual(video['_type'], 'url')
+        self.assertEqual(video['ie_key'], 'Youtube')
+        self.assertEqual(video['id'], 'BaW_jenozKc')
+        self.assertEqual(video['url'], 'https://www.youtube.com/watch?v=BaW_jenozKc')
+        self.assertEqual(video['title'], 'youtube-dl test video "\'/\\ä↭𝕐')
+        self.assertEqual(video['duration'], 10)
+        self.assertEqual(video['uploader'], 'Philipp Hagemeister')
+
+
 if __name__ == '__main__':
-    generate_youtube_PlayList()                                    
+    unittest.main()
