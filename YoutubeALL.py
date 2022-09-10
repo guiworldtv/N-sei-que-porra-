@@ -13,7 +13,7 @@ with yt_dlp.YoutubeDL(ydl_opts) as ydl:
     
 
     
-    write_to_playlist = info
+    write_to_playlist = json.dumps(ydl.sanitize_info(info)
     
     
 def write_to_playlist(content):
