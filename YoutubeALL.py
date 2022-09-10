@@ -5,12 +5,14 @@ import json
 import yt_dlp
 m3u = None
 
-URL = 'https://www.youtube.com/watch?v=BaW_jenozKc'
+URL = 'https://www.youtube.com/watch?v=6_P_4TiK7zw'
 
 # ℹ️ See help(yt_dlp.YoutubeDL) for a list of available options and public functions
 def generate_youtube_tv():
-ydl_opts = {}
-with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+
+    ydl_opts = {}
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
     info = ydl.extract_info(URL, download=False)
 
     # ℹ️ ydl.sanitize_info makes the info json-serializable
