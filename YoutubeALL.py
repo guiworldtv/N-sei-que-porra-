@@ -14,8 +14,6 @@ import threading
 # third-party
 from lxml import html, etree
 
-# sjva 공용
-from framework import app
 
 # 패키지
 from .plugin import logger, package_name
