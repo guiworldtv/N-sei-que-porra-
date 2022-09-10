@@ -1,7 +1,7 @@
 import json
 import yt_dlp
 
-URL = 'https://globoplay.globo.com/v/10892497/?s=0s'
+URL = 'https://vimeo.com/748244075'
 
 # ℹ️ See help(yt_dlp.YoutubeDL) for a list of available options and public functions
 ydl_opts = {}
