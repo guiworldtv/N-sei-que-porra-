@@ -8,8 +8,9 @@ m3u = None
 URL = 'https://www.youtube.com/watch?v=BaW_jenozKc'
 
 # ℹ️ See help(yt_dlp.YoutubeDL) for a list of available options and public functions
-ydl_opts = {}
-with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+def generate_youtube_tv():
+    ydl_opts = {}
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
     info = ydl.extract_info(URL, download=False)
 
     # ℹ️ ydl.sanitize_info makes the info json-serializable
@@ -38,7 +39,8 @@ def close_playlist():
 def generate_youtube_PlayList():
     create_playlist()
                                  
-                                 
+    generate_youtube_tv()
+                                   
     close_playlist()                                 
                                  
 if __name__ == '__main__':
