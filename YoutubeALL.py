@@ -2,7 +2,7 @@
 
 
 from __future__ import unicode_literals
-import youtube_dl
+from yt_dlp import YoutubeDL
 import requests
 import shutil
 from urllib.request import urlopen
@@ -58,7 +58,7 @@ def generate_youtube_tv():
             if channel is None:
                 continue
             try:
-                with ydl:
+                with YoutubeDL() as ydl:
                     result = ydl.extract_info(
                         f"{line}/live",
                         download=False  # We just want to extract the info
