@@ -60,7 +60,7 @@ def generate_youtube_tv():
             try:
                 with ydl:
                     result = ydl.extract_info(
-                        f"{line}/live",
+                        f"{line}",
                         download=False  # We just want to extract the info
                     )
 
